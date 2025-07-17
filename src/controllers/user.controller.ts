@@ -2,6 +2,27 @@ import { Request, Response } from 'express';
 import User from '../models/user.model';
 import { createUserScehma } from '../validations/user.validation';
 
+// get all users
+export const getAllUsers = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    try {
+        // fetch all user
+        const users = await User.find().sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            users, // if empty then return [] otherwise return all user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong while fetching user',
+        });
+    }
+};
+
 // create user controller
 export const createUser = async (
     req: Request,
