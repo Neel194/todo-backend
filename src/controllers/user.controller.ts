@@ -62,3 +62,35 @@ export const createUser = async (
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+// delete user by id
+export const deleteUser = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { id } = req.params;
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'user not found',
+            });
+            return;
+        }
+
+        // delete user if found
+        await user.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: 'User deleted successfully',
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong while deleting user',
+        });
+    }
+};
