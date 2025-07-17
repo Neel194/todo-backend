@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/user.model';
 import { createUserScehma } from '../validations/user.validation';
 import { zodErrorFormatter } from '../utils/zodErrorFormatter';
+import { sendResponse } from '../utils/sendResponse';
 
 // get all users
 export const getAllUsers = async (
@@ -12,12 +13,15 @@ export const getAllUsers = async (
         // fetch all user
         const users = await User.find().sort({ createdAt: -1 });
 
-        res.status(200).json({
+        sendResponse(res, {
+            statusCode: 200,
             success: true,
-            users, // if empty then return [] otherwise return all user
+            message: 'Users fetched successfully',
+            data: users,
         });
     } catch (error) {
-        res.status(500).json({
+        sendResponse(res, {
+            statusCode: 500,
             success: false,
             message: 'Something went wrong while fetching user',
         });
@@ -35,20 +39,25 @@ export const createUser = async (
     if (!parsed.success) {
         const formattedErrors = zodErrorFormatter(parsed.error.issues);
 
-        res.status(400).json({
+        sendResponse(res, {
+            statusCode: 400,
             success: false,
             message: 'Validation failed',
             errors: formattedErrors,
         });
+        return;
     }
+
     try {
         const { name, email, password, role } = req.body;
 
         // check if email already exist
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            res.status(409).json({
-                error: 'User already exists with this email',
+            sendResponse(res, {
+                statusCode: 409,
+                success: false,
+                message: 'User already exists with this email',
             });
             return;
         }
@@ -62,9 +71,18 @@ export const createUser = async (
         });
 
         // send success response
-        res.status(201).json({ message: 'User created successfully', user });
+        sendResponse(res, {
+            statusCode: 201,
+            success: true,
+            message: 'User created successfully',
+            data: user,
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        sendResponse(res, {
+            statusCode: 500,
+            success: false,
+            message: 'Internal server error',
+        });
     }
 };
 
@@ -78,9 +96,10 @@ export const deleteUser = async (
         const user = await User.findById(id);
 
         if (!user) {
-            res.status(404).json({
+            sendResponse(res, {
+                statusCode: 404,
                 success: false,
-                message: 'user not found',
+                message: 'User not found',
             });
             return;
         }
@@ -88,12 +107,14 @@ export const deleteUser = async (
         // delete user if found
         await user.deleteOne();
 
-        res.status(200).json({
+        sendResponse(res, {
+            statusCode: 200,
             success: true,
             message: 'User deleted successfully',
         });
     } catch (error) {
-        res.status(500).json({
+        sendResponse(res, {
+            statusCode: 500,
             success: false,
             message: 'Something went wrong while deleting user',
         });
@@ -110,7 +131,8 @@ export const updateUser = async (
         const user = await User.findById(id);
 
         if (!user) {
-            res.status(404).json({
+            sendResponse(res, {
+                statusCode: 404,
                 success: false,
                 message: 'User not found',
             });
@@ -126,13 +148,15 @@ export const updateUser = async (
             runValidators: true, // apply mongoose validations
         });
 
-        res.status(200).json({
+        sendResponse(res, {
+            statusCode: 200,
             success: true,
             message: 'User updated successfully',
-            user: updatedUser,
+            data: updatedUser,
         });
     } catch (error) {
-        res.status(500).json({
+        sendResponse(res, {
+            statusCode: 500,
             success: false,
             message: 'Something went wrong while updating user',
         });
