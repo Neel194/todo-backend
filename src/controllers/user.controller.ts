@@ -94,3 +94,42 @@ export const deleteUser = async (
         });
     }
 };
+
+// update user by id
+export const updateUser = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { id } = req.params;
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+            return;
+        }
+
+        // update allowed fields from req.body
+        const updatedFields = req.body;
+
+        // update user
+        const updatedUser = await User.findByIdAndUpdate(id, updatedFields, {
+            new: true, // return the updated document
+            runValidators: true, // apply mongoose validations
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'User updated successfully',
+            user: updatedUser,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong while updating user',
+        });
+    }
+};
