@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/user.model';
 import { createUserScehma } from '../validations/user.validation';
+import { zodErrorFormatter } from '../utils/zodErrorFormatter';
 
 // get all users
 export const getAllUsers = async (
@@ -32,9 +33,13 @@ export const createUser = async (
     const parsed = createUserScehma.safeParse(req.body);
 
     if (!parsed.success) {
-        // validation fails, send error with details
-        res.status(400).json({ error: parsed.error.issues });
-        return;
+        const formattedErrors = zodErrorFormatter(parsed.error.issues);
+
+        res.status(400).json({
+            success: false,
+            message: 'Validation failed',
+            errors: formattedErrors,
+        });
     }
     try {
         const { name, email, password, role } = req.body;
