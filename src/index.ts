@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db';
 import userRoutes from '../src/routes/user.route';
+import { globalErrorHandler } from './middlewares/globalErrorHandler';
 dotenv.config();
 const app = express();
 
@@ -11,6 +12,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
+
+app.use(globalErrorHandler);
 
 // MongoDB database connect and server start
 connectDB().then(() => {
