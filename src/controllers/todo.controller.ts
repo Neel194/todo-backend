@@ -48,3 +48,53 @@ export const getAllTodos = catchAsync(async (req: Request, res: Response) => {
         data: todos,
     });
 });
+
+// update todo
+export const updateTodo = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    // check if todo exists
+    const existingTodo = await Todo.findById(id);
+    if (!existingTodo) {
+        return sendResponse(res, {
+            statusCode: 404,
+            success: false,
+            message: 'Todo not found',
+        });
+    }
+
+    // update fields
+    const updatedTodo = await Todo.findByIdAndUpdate(id, req.body, {
+        new: true, // return updated doc
+        runValidators: true, // ensure schema rules apply
+    });
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Todo updated successfully',
+        data: updatedTodo,
+    });
+});
+
+// delete todo
+export const deleteTodo = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const todo = await Todo.findById(id);
+    if (!todo) {
+        return sendResponse(res, {
+            statusCode: 404,
+            success: false,
+            message: 'Todo not found',
+        });
+    }
+
+    await todo.deleteOne();
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Todo deleted successfully',
+    });
+});
